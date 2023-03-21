@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:noni/screens/home_screen.dart';
+import 'package:noni/screens/home/home_screen.dart';
 
 import '../../widgets/logo.dart';
 
