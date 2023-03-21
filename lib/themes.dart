@@ -26,22 +26,28 @@ class CustomTheme with ChangeNotifier {
         brightness: Brightness.light,
         background: white,
         primary: darkBlue,
-        onPrimary: white,
-        onBackground: white,
+        onPrimary: darkBlue,
+        onBackground: lightBlue,
         secondary: lightBlue,
-        onSecondary: darkBlue,
-        surface: darkBlue,
-        onSurface: white,
+        outline: darkBlue,
       ),
-      textTheme: GoogleFonts.latoTextTheme().copyWith(
+      textTheme: GoogleFonts.mulishTextTheme().copyWith(
         displayLarge: const TextStyle(
           color: darkBlue,
-          fontSize: 64,
+          fontSize: 45,
+          fontWeight: FontWeight.bold,
+        ),
+        displaySmall: const TextStyle(
+          color: gray,
+          fontSize: 32,
           fontWeight: FontWeight.normal,
         ),
         bodyMedium: const TextStyle(color: darkBlue, fontSize: 48),
         bodySmall: const TextStyle(
-            color: darkBlue, fontSize: 32, fontWeight: FontWeight.bold),
+          color: darkBlue,
+          fontSize: 32,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }
@@ -52,22 +58,30 @@ class CustomTheme with ChangeNotifier {
       colorScheme: const ColorScheme.dark(
         brightness: Brightness.dark,
         background: darkBlue,
-        primary: darkBlue,
-        onPrimary: white,
+        primary: white,
+        onPrimary: darkBlue,
         onBackground: white,
         secondary: lightBlue,
-        surface: darkBlue,
-        onSurface: white,
+        outline: lightBlue,
       ),
-      textTheme: GoogleFonts.latoTextTheme().copyWith(
-          displayLarge: const TextStyle(
-            color: white,
-            fontSize: 64,
-            fontWeight: FontWeight.normal,
-          ),
-          bodyMedium: const TextStyle(color: darkBlue, fontSize: 48),
-          bodySmall: const TextStyle(
-              color: white, fontSize: 32, fontWeight: FontWeight.w900)),
+      textTheme: GoogleFonts.mulishTextTheme().copyWith(
+        displayLarge: const TextStyle(
+          color: white,
+          fontSize: 45,
+          fontWeight: FontWeight.normal,
+        ),
+        displaySmall: const TextStyle(
+          color: white,
+          fontSize: 32,
+          fontWeight: FontWeight.normal,
+        ),
+        bodyMedium: const TextStyle(color: darkBlue, fontSize: 48),
+        bodySmall: const TextStyle(
+          color: darkBlue,
+          fontSize: 32,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     );
   }
 }

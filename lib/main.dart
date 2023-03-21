@@ -29,7 +29,7 @@ class _AppState extends State<App> {
       darkTheme: CustomTheme.darkTheme,
       themeMode: currentTheme.currentTheme,
       debugShowCheckedModeBanner: false,
-      home: const Authentication(),
+      home: const AuthenticationScreen(),
     );
   }
 }
