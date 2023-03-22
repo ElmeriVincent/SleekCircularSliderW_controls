@@ -75,7 +75,10 @@ class CustomTheme with ChangeNotifier {
           fontSize: 32,
           fontWeight: FontWeight.normal,
         ),
-        bodyMedium: const TextStyle(color: darkBlue, fontSize: 48),
+        bodyMedium: const TextStyle(
+          color: darkBlue,
+          fontSize: 30,
+        ),
         bodySmall: const TextStyle(
           color: darkBlue,
           fontSize: 32,
