@@ -11,10 +11,11 @@ class TimerWidget extends StatefulWidget {
 }
 
 class _TimerWidgetState extends State<TimerWidget> {
-  double value = 0;
-  Duration maxStudyTime = 60.minutes;
+  Duration studyTime = 0.minutes;
   Duration minus = 1.seconds;
+  Duration init = 0.seconds;
   bool isTimerRunning = false;
+  bool isTimerPaused = false;
   Timer? timer;
 
   @override
@@ -26,6 +27,9 @@ class _TimerWidgetState extends State<TimerWidget> {
       children: [
         Center(
           child: SleekCircularSlider(
+            min: 0,
+            max: 60,
+            initialValue: 0.0,
             appearance: CircularSliderAppearance(
               customWidths:
                   CustomSliderWidths(progressBarWidth: 20, trackWidth: 15),
@@ -35,10 +39,7 @@ class _TimerWidgetState extends State<TimerWidget> {
               infoProperties: InfoProperties(
                 mainLabelStyle: theme.textTheme.displayLarge,
                 modifier: (double value) {
-                  int remainingSeconds = maxStudyTime.inSeconds;
-                  int minutes = (remainingSeconds / 60).floor();
-                  int seconds = remainingSeconds % 60;
-                  return '$minutes:${seconds.toString().padLeft(2, '0')}';
+                  return display();
                 },
               ),
               counterClockwise: false,
@@ -50,18 +51,11 @@ class _TimerWidgetState extends State<TimerWidget> {
             ),
             onChange: (value) {
               setState(() {
-                value = value;
-                maxStudyTime = Duration(minutes: value.toInt());
+                studyTime = Duration(minutes: value.toInt());
+                // if slider is changes during countdown
+                // countdown should pause and countinue when
               });
             },
-            onChangeEnd: (value) {
-              setState(() {
-                maxStudyTime = Duration(minutes: value.toInt());
-              });
-            },
-            min: 0,
-            max: 60,
-            initialValue: 0,
           ),
         ),
         const Padding(padding: EdgeInsets.all(20)),
@@ -93,24 +87,107 @@ class _TimerWidgetState extends State<TimerWidget> {
             ),
           ),
         ),
+        SizedBox(
+          height: 50,
+          width: 200,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.background,
+              side: BorderSide(
+                color: theme.colorScheme.outline,
+                width: 2,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              cancelTimer();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontSize: 30,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 50,
+          width: 200,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.background,
+              side: BorderSide(
+                color: theme.colorScheme.outline,
+                width: 2,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              pauseTimer();
+            },
+            child: Text(
+              'Pause',
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontSize: 30,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
+  // To begin the countdown timer
   void startTimer() {
     if (timer != null) {
       timer!.cancel();
     }
     timer = Timer.periodic(1.seconds, (timer) {
       setState(() {
-        maxStudyTime -= minus;
-        if (maxStudyTime <= Duration.zero) {
+        studyTime -= minus;
+        if (studyTime <= Duration.zero) {
           isTimerRunning = false;
           timer.cancel();
         }
       });
     });
     isTimerRunning = true;
+  }
+
+  //To pause the countdown timer
+  void pauseTimer() {
+    if (timer != null && isTimerRunning && !isTimerPaused) {
+      timer!.cancel();
+      isTimerPaused = true;
+    } else if (isTimerPaused) {
+      startTimer();
+      isTimerPaused = false;
+    }
+  }
+
+  //To cancel the countdown timer
+  void cancelTimer() {
+    if (isTimerRunning && !isTimerPaused | isTimerPaused) {
+      /// slider set to start
+      setState(() {
+        studyTime = Duration.zero;
+      });
+      timer!.cancel();
+      isTimerRunning = false;
+    }
+  }
+
+  String display() {
+    int remainingSeconds = studyTime.inSeconds;
+    int minutes = (remainingSeconds / 60).floor();
+    int seconds = remainingSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
