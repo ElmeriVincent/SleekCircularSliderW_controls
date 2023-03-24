@@ -22,22 +22,19 @@ class _TimerWidgetState extends State<TimerWidget> {
   late Timer timer;
   TimerStatus _timerStatus = TimerStatus.stopped;
 
+  double maxSliderValue = 60.0; // set max value to 60 minutes
+  double minSliderValue = 0.0; // set min value to 0 seconds
+
   @override
   void initState() {
     super.initState();
     // Initialize the initial slider value to the study time in minutes
-    initialSliderValue = _studyTime.inMinutes.toDouble();
+    initialSliderValue = _studyTime.inSeconds.toDouble();
   }
 
   void _initializeTimer() {
-    // Convert the study time to minutes and set the initial slider value
-    initialSliderValue = _studyTime.inSeconds / 60;
     // Check that the initial slider value is within the valid range of 0 to 60
-    try {
-      assert(initialSliderValue >= 0 && initialSliderValue <= 61);
-    } catch (e) {
-      throw Exception('Invalid slider value: $initialSliderValue');
-    }
+    assert(initialSliderValue >= 0 && initialSliderValue <= 60);
     // Set up a periodic timer to decrement the study time every second
     timer = Timer.periodic(1.seconds, (timer) {
       setState(() {
@@ -63,16 +60,11 @@ class _TimerWidgetState extends State<TimerWidget> {
     _timerStatus = TimerStatus.running;
   }
 
-  //To pause the countdown timer
   void pauseTimer() {
     if (_timerStatus == TimerStatus.running) {
-      // If the timer is running,
-      // cancel the timer and set the timer status to paused
       timer.cancel();
       _timerStatus = TimerStatus.paused;
     } else if (_timerStatus == TimerStatus.paused) {
-      // If the timer is paused,
-      // initialize the timer and set the timer status to running
       _initializeTimer();
       _timerStatus = TimerStatus.running;
     }
@@ -92,23 +84,6 @@ class _TimerWidgetState extends State<TimerWidget> {
     }
   }
 
-  // This function is called when the user changes the study time slider
-  void _handleDurationChange(double value) {
-    int newMinutes = value.toInt();
-    // Check if the new value is within the valid range of 1 to 60 minutes
-    if (newMinutes < 0 || newMinutes > 60) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Congrats! Impossible error unlocked.'),
-        ),
-      );
-      return;
-    }
-    setState(() {
-      _studyTime = Duration(minutes: newMinutes);
-    });
-  }
-
   // Get the remaining time in the format mm:ss
   String get remainingTimeDisplay {
     int remainingSeconds = _studyTime.inSeconds;
@@ -121,9 +96,9 @@ class _TimerWidgetState extends State<TimerWidget> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SleekCircularSlider(
-      min: 0,
-      max: 60,
-      initialValue: _studyTime.inSeconds / 60,
+      initialValue: initialSliderValue,
+      min: minSliderValue,
+      max: maxSliderValue,
       appearance: CircularSliderAppearance(
         customWidths: CustomSliderWidths(
           handlerSize: 10,
@@ -148,7 +123,12 @@ class _TimerWidgetState extends State<TimerWidget> {
         ),
       ),
       onChangeStart: (startValue) => pauseTimer(),
-      onChange: _handleDurationChange,
+      onChange: (double value) {
+        // update study time duration based on slider value
+        setState(() {
+          _studyTime = Duration(minutes: value.toInt());
+        });
+      },
       onChangeEnd: (endValue) {
         _studyTime = Duration(minutes: endValue.toInt());
         if (_timerStatus == TimerStatus.stopped) {
