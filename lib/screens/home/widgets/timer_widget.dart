@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:time/time.dart';
-import 'dart:async';
-import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
 class TimerWidget extends StatefulWidget {
   const TimerWidget({Key? key}) : super(key: key);
@@ -10,157 +7,116 @@ class TimerWidget extends StatefulWidget {
   State<TimerWidget> createState() => _TimerWidgetState();
 }
 
-enum TimerStatus {
-  running,
-  paused,
-  stopped,
-}
+enum TimerStatus { running, paused, stopped }
 
-class _TimerWidgetState extends State<TimerWidget> {
-  double initialSliderValue = 0.0;
-  Duration _studyTime = Duration.zero;
-  late Timer timer;
-  TimerStatus _timerStatus = TimerStatus.stopped;
+class _TimerWidgetState extends State<TimerWidget>
+    with SingleTickerProviderStateMixin {
+  // Animation controller used to control the progress indicator animation
+  late AnimationController _controller;
+
+  // Current status of the timer
+  late TimerStatus _status;
+
+  // Current progress of the timer, as a value between 0 and 1
+  double _progress = 0;
+
+  // Duration of the timer, in seconds
+  int _duration = 10; // in seconds
 
   @override
   void initState() {
     super.initState();
-    // Initialize the initial slider value to the study time in minutes
-    initialSliderValue = _studyTime.inMinutes.toDouble();
-  }
 
-  void _initializeTimer() {
-    // Convert the study time to minutes and set the initial slider value
-    initialSliderValue = _studyTime.inSeconds / 60;
-    // Check that the initial slider value is within the valid range of 0 to 60
-    try {
-      assert(initialSliderValue >= 0 && initialSliderValue <= 61);
-    } catch (e) {
-      throw Exception('Invalid slider value: $initialSliderValue');
-    }
-    // Set up a periodic timer to decrement the study time every second
-    timer = Timer.periodic(1.seconds, (timer) {
-      setState(() {
-        _studyTime -= const Duration(seconds: 1);
-        // If the study time reaches zero,
-        // cancel the timer and set the timer status to stopped
-        if (_studyTime <= Duration.zero) {
-          timer.cancel();
-          _timerStatus = TimerStatus.stopped;
+    // Initialize the animation controller with the duration of the timer
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: _duration),
+    )
+
+      // Update the progress value whenever the animation changes
+      ..addListener(() {
+        setState(() {
+          _progress = _controller.value;
+        });
+      })
+
+      // When the animation completes, update the status to "stopped"
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() {
+            _status = TimerStatus.stopped;
+          });
         }
       });
-    });
-  }
 
-  // To begin the countdown timer
-  void startTimer() {
-    if (_timerStatus == TimerStatus.running) {
-      // If the timer is already running, cancel the timer
-      timer.cancel();
-    }
-    // Initialize the timer and set the timer status to running
-    _initializeTimer();
-    _timerStatus = TimerStatus.running;
-  }
-
-  //To pause the countdown timer
-  void pauseTimer() {
-    if (_timerStatus == TimerStatus.running) {
-      // If the timer is running,
-      // cancel the timer and set the timer status to paused
-      timer.cancel();
-      _timerStatus = TimerStatus.paused;
-    } else if (_timerStatus == TimerStatus.paused) {
-      // If the timer is paused,
-      // initialize the timer and set the timer status to running
-      _initializeTimer();
-      _timerStatus = TimerStatus.running;
-    }
-  }
-
-  //To cancel the countdown timer
-  void cancelTimer() {
-    if (_timerStatus != TimerStatus.stopped) {
-      // If the timer is running or paused,
-      // cancel the timer and set the timer status to stopped
-      timer.cancel();
-      _timerStatus = TimerStatus.stopped;
-      // Reset the study time to zero
-      setState(() {
-        _studyTime = Duration.zero;
-      });
-    }
-  }
-
-  // This function is called when the user changes the study time slider
-  void _handleDurationChange(double value) {
-    int newMinutes = value.toInt();
-    // Check if the new value is within the valid range of 1 to 60 minutes
-    if (newMinutes < 0 || newMinutes > 60) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Congrats! Impossible error unlocked.'),
-        ),
-      );
-      return;
-    }
-    setState(() {
-      _studyTime = Duration(minutes: newMinutes);
-    });
-  }
-
-  // Get the remaining time in the format mm:ss
-  String get remainingTimeDisplay {
-    int remainingSeconds = _studyTime.inSeconds;
-    int minutes = (remainingSeconds / 60).floor();
-    int seconds = remainingSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SleekCircularSlider(
-      min: 0,
-      max: 60,
-      initialValue: _studyTime.inSeconds / 60,
-      appearance: CircularSliderAppearance(
-        customWidths: CustomSliderWidths(
-          handlerSize: 10,
-          shadowWidth: 50,
-          progressBarWidth: 30,
-          trackWidth: 10,
-        ),
-        size: 300,
-        startAngle: 290,
-        angleRange: 320,
-        infoProperties: InfoProperties(
-          mainLabelStyle: theme.textTheme.displayLarge,
-          modifier: (double value) {
-            return remainingTimeDisplay;
-          },
-        ),
-        counterClockwise: false,
-        customColors: CustomSliderColors(
-          progressBarColor: theme.colorScheme.secondary,
-          trackColor: theme.colorScheme.primary,
-          dotColor: theme.colorScheme.background,
-        ),
-      ),
-      onChangeStart: (startValue) => pauseTimer(),
-      onChange: _handleDurationChange,
-      onChangeEnd: (endValue) {
-        _studyTime = Duration(minutes: endValue.toInt());
-        if (_timerStatus == TimerStatus.stopped) {
-          startTimer();
-        }
-      },
-    );
+    // Set the initial status to "stopped"
+    _status = TimerStatus.stopped;
   }
 
   @override
   void dispose() {
-    timer.cancel();
+    // Dispose of the animation controller when the widget is removed from the tree
+    _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the current theme for the app
+    final theme = Theme.of(context);
+
+    // Build the widget tree
+    return SizedBox(
+      width: 250,
+      height: 250,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Build the circular progress indicator, with the value based on the current progress
+          CircularProgressIndicator(
+            value: 1 - _progress,
+            valueColor: AlwaysStoppedAnimation(
+                theme.colorScheme.primary.withOpacity(0.9)),
+            strokeWidth: 30,
+            backgroundColor: theme.colorScheme.secondary,
+          ),
+
+          // Build the progress display (either a play button, a countdown, or a "done" icon)
+          Center(child: buildProgress()),
+        ],
+      ),
+    );
+  }
+
+  Widget buildProgress() {
+    if (_status == TimerStatus.stopped) {
+      // Build the play button, which starts the timer when pressed
+      return IconButton(
+        icon: const Icon(Icons.play_arrow),
+        onPressed: () {
+          setState(() {
+            _status = TimerStatus.running;
+          });
+          _controller.reset();
+          _controller.forward();
+        },
+      );
+    } else if (_status == TimerStatus.running) {
+      // Build the countdown display, which shows the remaining time
+      return Text(
+        '${(_duration * (1 - _progress)).ceil()}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+        ),
+      );
+    } else {
+      // Build the "done" icon, which indicates that the timer has finished
+      return const Icon(
+        Icons.done,
+        color: Colors.green,
+        size: 56,
+      );
+    }
   }
 }

@@ -4,10 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 CustomTheme currentTheme = CustomTheme();
 
 // Colors to be used
-const darkBlue = Color.fromARGB(255, 20, 28, 43);
+const darkBlue = Color(0xFF2C363D);
 const lightBlue = Color.fromARGB(255, 0, 218, 247);
-const white = Color.fromARGB(255, 255, 255, 255);
-const gray = Color.fromARGB(255, 31, 38, 51);
+const darkerGray = Color(0xFF505E68);
+const lighterGray = Color(0xFF91A8AB);
+const white = Colors.white;
 
 class CustomTheme with ChangeNotifier {
   static bool _isDarkTheme = true;
@@ -18,6 +19,7 @@ class CustomTheme with ChangeNotifier {
     _isDarkTheme = !_isDarkTheme;
     notifyListeners();
   }
+  /*
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -51,6 +53,7 @@ class CustomTheme with ChangeNotifier {
       ),
     );
   }
+  */
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -58,10 +61,10 @@ class CustomTheme with ChangeNotifier {
       colorScheme: const ColorScheme.dark(
         brightness: Brightness.dark,
         background: darkBlue,
-        primary: white,
+        primary: darkerGray,
         onPrimary: darkBlue,
         onBackground: white,
-        secondary: lightBlue,
+        secondary: lighterGray,
         outline: lightBlue,
       ),
       textTheme: GoogleFonts.mulishTextTheme().copyWith(
