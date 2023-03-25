@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:time/time.dart';
 import 'dart:async';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
@@ -10,100 +9,79 @@ class TimerWidget extends StatefulWidget {
   State<TimerWidget> createState() => _TimerWidgetState();
 }
 
-enum TimerStatus {
-  running,
-  paused,
-  stopped,
-}
+// Define an enumeration for the different states of the timer.
+enum TimerStatus { running, paused, stopped }
 
 class _TimerWidgetState extends State<TimerWidget> {
-  double initialSliderValue = 0.0;
+  // Define the minimum and maximum values for the slider.
+  double minSliderValue = 0;
+  double maxSliderValue = 60;
+
+  // Initialize the duration of the study time to zero and the timer status to stopped.
   Duration _studyTime = Duration.zero;
-  late Timer timer;
   TimerStatus _timerStatus = TimerStatus.stopped;
 
-  double maxSliderValue = 60.0; // set max value to 60 minutes
-  double minSliderValue = 0.0; // set min value to 0 seconds
+  // Define a Timer object that will be used to update the study time.
+  late Timer _timer;
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize the initial slider value to the study time in minutes
-    initialSliderValue = _studyTime.inSeconds.toDouble();
+  // This function is called when the slider value changes.
+  void _onSliderChange(double value) {
+    // Update the study time based on the new slider value.
+    setState(() {
+      _studyTime = Duration(minutes: value.toInt());
+    });
   }
 
-  void _initializeTimer() {
-    // Check that the initial slider value is within the valid range of 0 to 60
-    assert(initialSliderValue >= 0 && initialSliderValue <= 60);
-    // Set up a periodic timer to decrement the study time every second
-    timer = Timer.periodic(1.seconds, (timer) {
+  // This function is called when the user releases the slider.
+  void _onSliderChangeEnd(double endValue) {
+    // Round the study time to the nearest minute.
+    _studyTime = Duration(minutes: endValue.round());
+
+    // If the timer is stopped and the study time is greater than zero, start the timer.
+    if (_timerStatus == TimerStatus.stopped && _studyTime > Duration.zero) {
+      startTimer();
+    }
+  }
+
+  void startTimer() {
+    _timerStatus = TimerStatus.running;
+    // Set up a periodic timer that updates the study time.
+    _timer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
       setState(() {
-        _studyTime -= const Duration(seconds: 1);
-        // If the study time reaches zero,
-        // cancel the timer and set the timer status to stopped
-        if (_studyTime <= Duration.zero) {
-          timer.cancel();
+        if (_studyTime.inSeconds > 0) {
+          _studyTime = _studyTime - const Duration(seconds: 1);
+        } else {
+          // If the study time is up, cancel the timer and set the timer status to stopped.
           _timerStatus = TimerStatus.stopped;
+          timer.cancel();
         }
       });
     });
   }
 
-  // To begin the countdown timer
-  void startTimer() {
-    if (_timerStatus == TimerStatus.running) {
-      // If the timer is already running, cancel the timer
-      timer.cancel();
-    }
-    // Initialize the timer and set the timer status to running
-    _initializeTimer();
-    _timerStatus = TimerStatus.running;
+  // This function is called when the widget is disposed to cancel the timer and avoid memory leaks.
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
-  void pauseTimer() {
-    if (_timerStatus == TimerStatus.running) {
-      timer.cancel();
-      _timerStatus = TimerStatus.paused;
-    } else if (_timerStatus == TimerStatus.paused) {
-      _initializeTimer();
-      _timerStatus = TimerStatus.running;
-    }
-  }
-
-  //To cancel the countdown timer
-  void cancelTimer() {
-    if (_timerStatus != TimerStatus.stopped) {
-      // If the timer is running or paused,
-      // cancel the timer and set the timer status to stopped
-      timer.cancel();
-      _timerStatus = TimerStatus.stopped;
-      // Reset the study time to zero
-      setState(() {
-        _studyTime = Duration.zero;
-      });
-    }
-  }
-
-  // Get the remaining time in the format mm:ss
-  String get remainingTimeDisplay {
-    int remainingSeconds = _studyTime.inSeconds;
-    int minutes = (remainingSeconds / 60).floor();
-    int seconds = remainingSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
+  // This getter returns a formatted string to display the remaining study time.
+  String get remainingTimeDisplay =>
+      '${_studyTime.inMinutes}:${(_studyTime.inSeconds % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SleekCircularSlider(
-      initialValue: initialSliderValue,
+      initialValue: _studyTime.inMinutes.toDouble(),
       min: minSliderValue,
       max: maxSliderValue,
       appearance: CircularSliderAppearance(
         customWidths: CustomSliderWidths(
-          handlerSize: 10,
+          handlerSize: 5,
           shadowWidth: 50,
-          progressBarWidth: 30,
+          progressBarWidth: 15,
           trackWidth: 10,
         ),
         size: 300,
@@ -122,25 +100,8 @@ class _TimerWidgetState extends State<TimerWidget> {
           dotColor: theme.colorScheme.background,
         ),
       ),
-      onChangeStart: (startValue) => pauseTimer(),
-      onChange: (double value) {
-        // update study time duration based on slider value
-        setState(() {
-          _studyTime = Duration(minutes: value.toInt());
-        });
-      },
-      onChangeEnd: (endValue) {
-        _studyTime = Duration(minutes: endValue.toInt());
-        if (_timerStatus == TimerStatus.stopped) {
-          startTimer();
-        }
-      },
+      onChange: _onSliderChange,
+      onChangeEnd: _onSliderChangeEnd,
     );
-  }
-
-  @override
-  void dispose() {
-    timer.cancel();
-    super.dispose();
   }
 }
