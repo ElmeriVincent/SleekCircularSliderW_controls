@@ -55,8 +55,8 @@ class _TimerWidgetState extends State<TimerWidget> {
       icon: _timerStatus == TimerStatus.running
           ? const Icon(Icons.pause)
           : const Icon(Icons.play_arrow),
-      color: Theme.of(context).colorScheme.primary,
-      iconSize: 32,
+      color: Colors.deepPurple,
+      iconSize: 48,
       onPressed: () {
         setState(() {
           if (_timerStatus == TimerStatus.running) {
@@ -72,48 +72,54 @@ class _TimerWidgetState extends State<TimerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SleekCircularSlider(
-      initialValue: _studyTime.inMinutes.toDouble(),
-      min: minSliderValue,
-      max: maxSliderValue,
-      appearance: CircularSliderAppearance(
-        customWidths: CustomSliderWidths(
-          handlerSize: 10,
-          progressBarWidth: 30,
-          trackWidth: 20,
-        ),
-        size: 300,
-        startAngle: 290,
-        angleRange: 320,
-        counterClockwise: false,
-        customColors: CustomSliderColors(
-          shadowMaxOpacity: 0,
-          progressBarColor: Theme.of(context).colorScheme.secondary,
-          trackColor: Theme.of(context).colorScheme.primary,
-          dotColor: Theme.of(context).colorScheme.outline,
-        ),
-      ),
-      onChange: _onSliderChange,
-      onChangeEnd: _onSliderChangeEnd,
-      innerWidget: (_) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              remainingTimeDisplay,
-              style: Theme.of(context).textTheme.displayLarge,
+    return Scaffold(
+      body: Center(
+        child: SleekCircularSlider(
+          initialValue: _studyTime.inMinutes.toDouble(),
+          min: minSliderValue,
+          max: maxSliderValue,
+          appearance: CircularSliderAppearance(
+            customWidths: CustomSliderWidths(
+              handlerSize: 10,
+              progressBarWidth: 30,
+              trackWidth: 20,
             ),
-            Row(
+            size: 300,
+            startAngle: 290,
+            angleRange: 320,
+            counterClockwise: false,
+            customColors: CustomSliderColors(
+              shadowMaxOpacity: 0,
+              progressBarColor: Colors.deepPurple,
+              trackColor: Colors.black26,
+            ),
+          ),
+          onChange: _onSliderChange,
+          onChangeEnd: _onSliderChangeEnd,
+          innerWidget: (_) {
+            return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _timerControlIcon(),
+                Text(
+                  remainingTimeDisplay,
+                  style: const TextStyle(
+                      color: Colors.deepPurple,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _timerControlIcon(),
+                  ],
+                ),
               ],
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }
