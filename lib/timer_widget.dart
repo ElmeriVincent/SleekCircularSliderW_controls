@@ -55,7 +55,7 @@ class _TimerWidgetState extends State<TimerWidget> {
       icon: _timerStatus == TimerStatus.running
           ? const Icon(Icons.pause)
           : const Icon(Icons.play_arrow),
-      color: Colors.deepPurple,
+      color: Color(0xFFeceff4),
       iconSize: 48,
       onPressed: () {
         setState(() {
@@ -73,6 +73,7 @@ class _TimerWidgetState extends State<TimerWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF2E3440),
       body: Center(
         child: SleekCircularSlider(
           initialValue: _studyTime.inMinutes.toDouble(),
@@ -90,8 +91,8 @@ class _TimerWidgetState extends State<TimerWidget> {
             counterClockwise: false,
             customColors: CustomSliderColors(
               shadowMaxOpacity: 0,
-              progressBarColor: Colors.deepPurple,
-              trackColor: Colors.black26,
+              progressBarColor: const Color(0xFFa3be8c),
+              trackColor: const Color(0xFFd8dee9),
             ),
           ),
           onChange: _onSliderChange,
@@ -104,7 +105,7 @@ class _TimerWidgetState extends State<TimerWidget> {
                 Text(
                   remainingTimeDisplay,
                   style: const TextStyle(
-                      color: Colors.deepPurple,
+                      color: Color(0xFFeceff4),
                       fontSize: 48,
                       fontWeight: FontWeight.bold),
                 ),
